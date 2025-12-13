@@ -15,8 +15,6 @@ namespace FileStack.Api.Controllers
         {
             _mediator = mediator;
         }
-
-        
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserCommand command)
         {
@@ -31,9 +29,6 @@ namespace FileStack.Api.Controllers
         public async Task<IActionResult> Login([FromBody] UserLoginCommand command)
         {
             var response= await _mediator.Send(command);
-         
-
-            
             return Ok(response);
         }
 
