@@ -1,4 +1,7 @@
-﻿using FileStack.Infrastructure.Persistence;
+﻿using FileStack.Infrastructure.MailService;
+using FileStack.Infrastructure.MailService.MailSettings;
+using FileStack.Infrastructure.Persistence;
+using MailKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,8 +16,9 @@ public static class AddInfrastructureExtenstion
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         });
-        
-        
+        Services.Configure<MailSettingsHelper>(configuration.GetSection("MailSettings"));
+        Services.AddTransient<IMailingService,MailingSerivce>();
+
 
     }
 }

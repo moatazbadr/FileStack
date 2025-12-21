@@ -7,6 +7,8 @@ namespace FileStack.Application.Interfaces
     {
       Task<RegisterResponse> RegisterUserAsync(RegisterRequestDTO registerRequest);
       Task<LoginResponse> LoginAsync(LoginRequestDTO loginRequest);
+        Task<OTPVerficiactionResponse> Verify(string Email, string OtpCode);
+
 
     }
 }

@@ -124,5 +124,12 @@ namespace FileStack.Infrastructure.Repositories
                 Success = true
             };
         }
+
+        public Task<OTPVerficiactionResponse> Verify(string Email, string OtpCode)
+        {
+        
+
+            throw new NotImplementedException();
+        }
     }
 }

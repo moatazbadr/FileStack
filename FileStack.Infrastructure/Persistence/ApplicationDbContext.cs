@@ -17,4 +17,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 
+    public DbSet<TempUser> TempUsers { get; set; }
+    public DbSet<OTPToken> OTPTokens { get; set; }
 }

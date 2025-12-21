@@ -1,0 +1,17 @@
+﻿using FluentValidation;
+
+namespace FileStack.Application.User.Command.UserLoginCommand;
+
+public class UserLoginCommandValidator : AbstractValidator<UserLoginCommand>
+{
+    public UserLoginCommandValidator()
+    {
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email is required.")
+            .EmailAddress().WithMessage("Invalid email format.");
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("Password is required.")
+            .MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
+
+    }
+}
