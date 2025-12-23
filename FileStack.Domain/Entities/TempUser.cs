@@ -10,8 +10,8 @@ namespace FileStack.Domain.Entities
 
         public DateOnly BirthDate { get; set; } = DateOnly.MinValue;
         public string Email { get; set; }
-        public string Password { get; set; }
-        public string ConfirmPassword { get; set; }
+
+        public string PasswordHash { get; set; } = string.Empty;
 
 
     }

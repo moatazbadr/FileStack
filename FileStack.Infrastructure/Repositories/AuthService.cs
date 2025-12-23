@@ -3,6 +3,7 @@ using FileStack.Application.DTOS;
 using FileStack.Application.Interfaces;
 using FileStack.Domain.Entities;
 using FileStack.Infrastructure.Constants;
+using FileStack.Infrastructure.MailService;
 using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -13,12 +14,17 @@ namespace FileStack.Infrastructure.Repositories
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ItokenHandler _itokenHandler;
+        private readonly IMailingService _mailing;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            ItokenHandler itokenHandler)
+            ItokenHandler itokenHandler,
+            IMailingService mailing
+            
+            )
         {
+            _mailing = mailing;
             _userManager = userManager;
             _roleManager = roleManager;
             _itokenHandler = itokenHandler;
@@ -65,8 +71,8 @@ namespace FileStack.Infrastructure.Repositories
             {
                 return new RegisterResponse
                 {
-                    Message = "User with this email already exists",
-                    Success = false
+                    Message = "If this Email is valid, an OTP has been sent to this Email",
+                    Success = true
                 };
             }
 
@@ -128,7 +134,6 @@ namespace FileStack.Infrastructure.Repositories
         public Task<OTPVerficiactionResponse> Verify(string Email, string OtpCode)
         {
         
-
             throw new NotImplementedException();
         }
     }
