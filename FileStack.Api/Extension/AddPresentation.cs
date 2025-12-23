@@ -72,6 +72,7 @@ namespace FileStack.Api.Extension
                ;
             services.AddScoped<IauthService,AuthService>();
             services.AddTransient<ItokenHandler, tokenHandler>();
+            
 
 
         }

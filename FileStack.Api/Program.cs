@@ -4,6 +4,7 @@ using FileStack.Application.Extension;
 using FileStack.Application.Interfaces;
 using FileStack.Infrastructure.Extensions;
 using FileStack.Infrastructure.Repositories;
+using Serilog;
 
 namespace FileStack.Api
 {
@@ -23,8 +24,10 @@ namespace FileStack.Api
             builder.Services.AddInfrastructure(builder.Configuration);
             builder.Services.AddApplicationLayer();
             //builder.Services.AddScoped<IauthService, AuthService>();
+            builder.Host.UseSerilog((context, config) => {
+                config.ReadFrom.Configuration(context.Configuration);
+            });
             var app = builder.Build();
-
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
