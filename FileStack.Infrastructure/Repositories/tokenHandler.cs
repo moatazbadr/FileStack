@@ -1,5 +1,6 @@
 ﻿using FileStack.Application.Interfaces;
 using FileStack.Domain.Entities;
+using FileStack.Infrastructure.JWT;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -7,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace FileStack.Infrastructure.JWT
+namespace FileStack.Infrastructure.Repositories
 {
     public class tokenHandler : ItokenHandler
     {

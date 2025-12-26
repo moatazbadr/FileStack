@@ -12,7 +12,8 @@ namespace FileStack.Domain.Entities
         public DateOnly BirthDate { get; set; } = DateOnly.MinValue;
         public string Email { get; set; }
 
-        public string PasswordHash { get; set; } = string.Empty;
+        public string PasswordPlain { get; set; } = string.Empty;
+        public bool IsVerified { get; set; } = false;
 
 
     }

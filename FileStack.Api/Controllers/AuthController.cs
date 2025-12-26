@@ -1,4 +1,5 @@
-﻿using FileStack.Application.User.Command.UserLoginCommand;
+﻿using FileStack.Application.User.Command.UserEmailConfirmation;
+using FileStack.Application.User.Command.UserLoginCommand;
 using FileStack.Application.User.Command.UserREgisterationCommand;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -30,6 +31,13 @@ namespace FileStack.Api.Controllers
         {
             var response= await _mediator.Send(command);
             return Ok(response);
+        }
+        [HttpPost("verify-email")]
+        public async Task <IActionResult> VerifyAccount([FromBody] ConfirmEmailCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Ok(response);
+
         }
 
     }

@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
-using static System.Net.WebRequestMethods;
 
 namespace FileStack.Infrastructure.Repositories
 {
@@ -20,7 +19,7 @@ namespace FileStack.Infrastructure.Repositories
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ItokenHandler _itokenHandler;
         private readonly IMailingService _mailing;
-        private  readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
@@ -38,16 +37,40 @@ namespace FileStack.Infrastructure.Repositories
             _itokenHandler = itokenHandler;
         }
 
+        public async Task<OTPToken> GetOTPToken(string Email,string otpCode)
+        {
+            
+            var hashedOtp = BCrypt.Net.BCrypt.HashPassword(otpCode);
+            var previousOtps = await _context.OTPTokens.Where(otp => otp.UserEmail == Email && ! otp.IsUsed).ToListAsync();
+            foreach (var oldOtp in previousOtps)
+            {
+                oldOtp.IsUsed = true; 
+            }
+            var otpEntity = new OTPToken
+            {
+                AttemptCount = 0,
+                CodeHash = hashedOtp,
+                CreatedAt = DateTime.UtcNow,
+                ExpirationTime = DateTime.UtcNow.AddMinutes(10),
+                IsUsed = false,
+                PurposeOfOTP = PurposeOTP.AccountVerification,
+                UserEmail = Email
+            };
+            return otpEntity;
+        }
+
+        #region Login Function
         public async Task<LoginResponse> LoginAsync(LoginRequestDTO loginRequest)
         {
-            var existingUser =await _userManager.FindByEmailAsync(loginRequest.Email);
-            if (existingUser == null) {
+            var existingUser = await _userManager.FindByEmailAsync(loginRequest.Email);
+            if (existingUser == null)
+            {
                 return new LoginResponse
                 {
-                    Message="Email or password is invalid"
+                    Message = "Email or password is invalid"
                 };
             }
-            var checkPassword = await _userManager.CheckPasswordAsync(existingUser , loginRequest.Password);
+            var checkPassword = await _userManager.CheckPasswordAsync(existingUser, loginRequest.Password);
             if (!checkPassword)
             {
                 return new LoginResponse
@@ -69,8 +92,10 @@ namespace FileStack.Infrastructure.Repositories
             };
 
             return loginResponse;
-        }
+        } 
+        #endregion
 
+        //IMPORTANT: Refactor this method to implement Single Responsibility Principle (SRP)
         public async Task<RegisterResponse> RegisterUserAsync(RegisterRequestDTO registerRequest)
         {
             // Check if email already exists
@@ -84,9 +109,10 @@ namespace FileStack.Infrastructure.Repositories
                 };
             }
 
-            
-            var Tempuser = _context.TempUsers.FirstOrDefault(u => u.Email == registerRequest.Email);
-            if (Tempuser == null) {
+
+            var Tempuser = await _context.TempUsers.FirstOrDefaultAsync(u => u.Email == registerRequest.Email);
+            if (Tempuser == null)
+            {
 
                 Tempuser = new TempUser()
                 {
@@ -95,53 +121,23 @@ namespace FileStack.Infrastructure.Repositories
                 await _context.TempUsers.AddAsync(Tempuser);
 
             }
-            var Hasher = new PasswordHasher<TempUser>();
-            var hashedPassword = Hasher.HashPassword(Tempuser, registerRequest.Password);
+            Tempuser.PasswordPlain= registerRequest.Password;
             Tempuser.FirstName = registerRequest.FirstName;
             Tempuser.LastName = registerRequest.LastName;
             Tempuser.BirthDate = registerRequest.BirthDate;
-            Tempuser.PasswordHash = hashedPassword;
-
-            var recentOtps = await _context.OTPTokens
-    .Where(x => x.UserEmail == registerRequest.Email &&
-                x.CreatedAt > DateTime.UtcNow.AddMinutes(-1))
-    .CountAsync();
-
-            if (recentOtps > 0)
-            {
-                return new RegisterResponse
-                {
-                    Success = true,
-                    Message = "If this email is valid, an OTP has been sent."
-                };
-            }
-            var otpCode =  RandomNumberGenerator.GetInt32(100000,999999).ToString(); // Generate a 6-digit OTP code
-            var hashedOtp = BCrypt.Net.BCrypt.HashPassword(otpCode);
+            
+            await _context.SaveChangesAsync();
             var OtpEntity = new OTPToken();
-            var previousOtps = await _context.OTPTokens
-    .Where(t => t.UserEmail == registerRequest.Email && !t.IsUsed).ToListAsync();
+            var OtpCode = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
 
-            foreach (var oldOtp in previousOtps)
-            {
-                oldOtp.IsUsed = true; // Mark as used/invalidated so only the NEW one works
-            }
             using var transcation = await _context.Database.BeginTransactionAsync();
             try
             {
-                OtpEntity = new OTPToken
-                {
-                    AttemptCount = 0,
-                    CodeHash = hashedOtp,
-                    CreatedAt = DateTime.UtcNow,
-                    ExpirationTime = DateTime.UtcNow.AddMinutes(10),
-                    IsUsed = false,
-                    PurposeOfOTP = PurposeOTP.AccountVerification,
-                    UserEmail = registerRequest.Email
-                };
+               OtpEntity= await GetOTPToken(registerRequest.Email, OtpCode);
                 await _context.OTPTokens.AddAsync(OtpEntity);
-                await _context.SaveChangesAsync();  
+                await _context.SaveChangesAsync();
 
-                await transcation.CommitAsync();    
+                await transcation.CommitAsync();
             }
             catch (Exception ex)
             {
@@ -152,82 +148,125 @@ namespace FileStack.Infrastructure.Repositories
                     Success = false
                 };
             }
-            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Constants", "Email.html");
-            var emailTemplate = await System.IO.File.ReadAllTextAsync(templatePath);
-            var emailBody = emailTemplate.Replace("{{OTP}}", otpCode)
-                                         .Replace("{{FirstName}}", registerRequest.FirstName);
+           
 
-          await   _mailing.SendEmailAsync(registerRequest.Email, "Verify your Email", emailBody);  
 
+            await sendOtpMail(registerRequest.Email,OtpCode, registerRequest.FirstName);
             return new RegisterResponse
             {
                 Message = "an OTP has been sent to this Email",
                 Success = true
             };
-
-
-
-
         }
-            #region Old Registeration
-            //var newUser = new ApplicationUser
-            //{
-            //    UserName = registerRequest.Email,
-            //    Email = registerRequest.Email,
-            //    FirstName = registerRequest.FirstName,
-            //    LastName = registerRequest.LastName,
-            //    BirthDate = registerRequest.BirthDate
-            //};
-
-            //// Create user
-            //var createUserResult = await _userManager.CreateAsync(newUser, registerRequest.Password);
-            //if (!createUserResult.Succeeded)
-            //{
-            //    var errors = string.Join(", ", createUserResult.Errors.Select(e => e.Description));
-            //    return new RegisterResponse
-            //    {
-            //        Message = $"User registration failed: {errors}",
-            //        Success = false
-            //    };
-            //}
-
-            //// Check if the required role exists
-            //var requiredRole = await _roleManager.FindByNameAsync(ValidUserRoles.User);
-
-            //if (requiredRole is null)
-            //{
-            //    return new RegisterResponse
-            //    {
-            //        Message = $"Role '{ValidUserRoles.User}' does not exist in the database",
-            //        Success = false
-            //    };
-            //}
-
-            //// Assign role to user
-            //var roleAssignResult = await _userManager.AddToRoleAsync(newUser, requiredRole.Name);
-
-            //if (!roleAssignResult.Succeeded)
-            //{
-            //    var errors = string.Join(", ", roleAssignResult.Errors.Select(e => e.Description));
-            //    return new RegisterResponse
-            //    {
-            //        Message = $"User created but failed to assign role: {errors}",
-            //        Success = false
-            //    };
-            //}
-
-            //// SUCCESS
-            //return new RegisterResponse
-            //{
-            //    Message = "User registered successfully",
-            //    Success = true
-            //}; 
-            #endregion
-
-        public Task<OTPVerficiactionResponse> Verify(string Email, string OtpCode)
-        {
         
-            throw new NotImplementedException();
+
+        private async Task sendOtpMail(string email, string otpCode, string firstName)
+        {
+            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Constants", "Email.html");
+            var emailTemplate = await System.IO.File.ReadAllTextAsync(templatePath);
+            var emailBody = emailTemplate.Replace("{{OTP}}", otpCode)
+                                         .Replace("{{FirstName}}", firstName);
+            await _mailing.SendEmailAsync(email, "Verify your Email", emailBody);
         }
+
+        public async Task<OTPVerficiactionResponse> Verify(string Email, string OtpCode)
+        {
+            var TempUser = await _context.TempUsers.FirstOrDefaultAsync(u => u.Email == Email);
+            var otpResponse = new OTPVerficiactionResponse();
+            if (TempUser is null)
+            {
+                otpResponse.Message = "Invalid OTP or Email.";
+                otpResponse.IsVerified = false;
+                return otpResponse;
+            }
+            if (TempUser.IsVerified)
+            {
+                otpResponse.Message = "User is already verified.";
+                otpResponse.IsVerified = true;
+                return otpResponse;
+            }
+            var otpEntity = await _context.OTPTokens
+                .Where(otp => otp.UserEmail == Email && !otp.IsUsed && otp.PurposeOfOTP == PurposeOTP.AccountVerification)
+                .OrderByDescending(otp => otp.CreatedAt)
+                .FirstOrDefaultAsync();
+            if (otpEntity is null)
+            {
+                otpResponse.Message = "Invalid OTP or Email.";
+                otpResponse.IsVerified = false;
+                return otpResponse;
+            }
+         if ( otpEntity.ExpirationTime < DateTime.UtcNow )
+            {
+                otpResponse.Message = "Invalid OTP or Email.";
+                otpResponse.IsVerified = false;
+                otpEntity.IsUsed = true;
+                return otpResponse;
+            }
+            if (otpEntity.AttemptCount >= 5)
+            {
+                otpResponse.Message = "Maximum OTP verification attempts exceeded.";
+                otpResponse.IsVerified = false;
+                return otpResponse;
+            }
+            if (!BCrypt.Net.BCrypt.Verify(OtpCode, otpEntity.CodeHash))
+            {
+                otpEntity.AttemptCount += 1;
+                await _context.SaveChangesAsync();
+                otpResponse.Message = "Invalid OTP or Email.";
+                otpResponse.IsVerified = false;
+                return otpResponse;
+
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                otpEntity.IsUsed = true;
+                TempUser.IsVerified = true;
+
+                var identityResult = await CreateIdentityUser(TempUser);
+                if (!identityResult.Succeeded)
+                    throw new Exception("Identity user creation failed.");
+
+                await transaction.CommitAsync();
+
+                otpResponse.IsVerified = true;
+                otpResponse.Message = "OTP verified successfully. User account created.";
+                return otpResponse;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return new OTPVerficiactionResponse { IsVerified = false, Message = "Verification failed. Please try again." };
+            }
+
+        }
+        private async Task <IdentityResult> CreateIdentityUser(TempUser tempUser)
+        {
+            var IdentityUser = new ApplicationUser()
+            {
+                Email = tempUser.Email,
+                FirstName = tempUser.FirstName,
+                LastName = tempUser.LastName,   
+                BirthDate = tempUser.BirthDate,
+                UserName= tempUser.Email,
+                EmailConfirmed =true
+              
+            };
+
+            var result=await _userManager.CreateAsync(IdentityUser,tempUser.PasswordPlain);
+
+            if (result.Succeeded) {
+            await _userManager.AddToRoleAsync(IdentityUser,ValidUserRoles.User);
+                _context.Remove(tempUser);
+                await _context.SaveChangesAsync();
+            }
+         
+             return result;
+
+
+        }
+
+      
     }
 }
