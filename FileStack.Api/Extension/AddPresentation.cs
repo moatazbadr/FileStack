@@ -1,8 +1,11 @@
-﻿using FileStack.Application.Interfaces;
+﻿using FileStack.Api.Middlewares;
+using FileStack.Application.Interfaces;
+using FileStack.Application.Validators;
 using FileStack.Domain.Entities;
 using FileStack.Infrastructure.JWT;
 using FileStack.Infrastructure.Persistence;
 using FileStack.Infrastructure.Repositories;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -73,8 +76,12 @@ namespace FileStack.Api.Extension
             services.AddScoped<IauthService,AuthService>();
             services.AddTransient<ItokenHandler, tokenHandler>();
             
-
-
+            services.AddTransient(
+ typeof(IPipelineBehavior<,>),
+ typeof(ValidationBehavior<,>));
         }
+
+
     }
-}
+    }
+

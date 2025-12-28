@@ -2,14 +2,17 @@
 using FileStack.Application.DTOS;
 using FileStack.Application.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace FileStack.Application.User.Command.UserREgisterationCommand
 {
     public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, RegisterResponse>
     {
         private readonly IauthService _authService;
-        public RegisterUserCommandHandler(IauthService authService)
+        private readonly ILogger<RegisterUserCommandHandler> _logger;
+        public RegisterUserCommandHandler(IauthService authService ,ILogger<RegisterUserCommandHandler> logger )
         {
+            _logger = logger;
             _authService =  authService;
         }
 
@@ -24,6 +27,7 @@ namespace FileStack.Application.User.Command.UserREgisterationCommand
                 Email = request.Email,
                 Password = request.Password,
             };
+            _logger.LogInformation("User : {@User} Just Registered",request.Email);
             var response = await _authService.RegisterUserAsync(registerRequestDTO);
             return response;
         }
