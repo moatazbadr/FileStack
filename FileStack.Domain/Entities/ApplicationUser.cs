@@ -9,7 +9,8 @@ public class ApplicationUser : IdentityUser
 
     public DateOnly BirthDate { get; set; }
 
+    public string? ProfileImageUrl { get; set; }
 
 
-    
+
 }

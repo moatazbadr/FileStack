@@ -1,12 +1,4 @@
-﻿using FileStack.Application.Interfaces;
-using FileStack.Domain.Entities;
-using FileStack.Infrastructure.JWT;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿
 
 namespace FileStack.Infrastructure.Repositories
 {
@@ -35,8 +27,12 @@ namespace FileStack.Infrastructure.Repositories
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("uid", user.Id)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim("FirstName", user.FirstName ?? ""),
+                new Claim("LastName", user.LastName ?? ""),
+                 new Claim("BirthDate", user.BirthDate.ToString("dd-MM-yy") ?? "")
+
             }
             .Union(userClaims)
             .Union(roleClaims);

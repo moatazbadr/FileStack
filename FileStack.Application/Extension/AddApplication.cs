@@ -1,7 +1,6 @@
-﻿using FileStack.Application.Validators;
+﻿using FileStack.Application.User;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileStack.Application.Extension;
@@ -17,6 +16,8 @@ public static class AddApplication
         services.AddValidatorsFromAssembly(assembly)
            .AddFluentValidationAutoValidation()
            ;
+        services.AddHttpContextAccessor();
+        services.AddScoped<IUserContext, UserContext>();
     }
 
 }

@@ -1,7 +1,5 @@
 ﻿using FileStack.Infrastructure.MailService.MailSettings;
-using Microsoft.Extensions.Options;
 using MimeKit;
-using System.Net.Mail;
 
 namespace FileStack.Infrastructure.MailService;
 
@@ -22,7 +20,7 @@ public class MailingSerivce : IMailingService
         Email.To.Add(MailboxAddress.Parse(toEmail));
 
         var builder = new BodyBuilder();
-      
+
         builder.HtmlBody = body;
         Email.Body = builder.ToMessageBody();
         Email.From.Add(new MailboxAddress(_mailSettings.DisplayName, _mailSettings.Mail));
