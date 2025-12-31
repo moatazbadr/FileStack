@@ -12,8 +12,7 @@ namespace FileStack.Api.Middlewares
             {
                 await next.Invoke(context);
             }
-           // to do add Not found Exception
-           
+            // to do add Not found Exception
             catch (ValidationException ex)
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -36,6 +35,21 @@ namespace FileStack.Api.Middlewares
                 await context.Response.WriteAsync(
                     JsonSerializer.Serialize(response));
             }
+            catch (Exception ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                context.Response.ContentType = "application/json";
+                var response = new
+                {
+                    success = false,
+                    message = "An unexpected error occurred.",
+                    details = ex.Message
+                };
+                await context.Response.WriteAsync(
+                    JsonSerializer.Serialize(response));
+
+            }
+            
 
 
 

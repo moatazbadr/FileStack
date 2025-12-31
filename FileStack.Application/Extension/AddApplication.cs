@@ -1,4 +1,5 @@
-﻿using FileStack.Application.User;
+﻿using FileStack.Application.Interfaces;
+using FileStack.Application.User;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ public static class AddApplication
            ;
         services.AddHttpContextAccessor();
         services.AddScoped<IUserContext, UserContext>();
+       
     }
 
 }

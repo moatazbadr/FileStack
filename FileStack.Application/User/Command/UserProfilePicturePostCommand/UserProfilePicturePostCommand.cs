@@ -8,7 +8,5 @@ public class UserProfilePicturePostCommand :IRequest<UploadResponse>
 {
     public IFormFile ? ProfilePicture { get; set; }
 
-    public string ? userId { get; set; }
-
 
 }

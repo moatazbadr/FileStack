@@ -14,7 +14,7 @@ public class GetUserProfileQueryHandler(IUserContext _context,UserManager<Applic
             return null;
         
         }
-        var UserProfile =new UserProfile(dbUser.FirstName, dbUser.LastName, dbUser.BirthDate, dbUser.Email);
+        var UserProfile =new UserProfile(dbUser.FirstName, dbUser.LastName, dbUser.BirthDate, dbUser.Email,dbUser.ProfileImageUrl);
         return UserProfile;
         
     }

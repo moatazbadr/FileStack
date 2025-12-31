@@ -16,44 +16,42 @@ namespace FileStack.Api.Extension
     {
         public static void AddPresentationLayer(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAuthentication();
-            services.AddIdentity<ApplicationUser, IdentityRole>().
-                AddEntityFrameworkStores<ApplicationDbContext>();
-            // Add Presentation Layer Services Here
-            services.Configure<JWTConfiguration>(configuration.GetSection("JWTConfiguration"));
-           
+            services.Configure<JWTConfiguration>(
+                configuration.GetSection("JWTConfiguration"));
+
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = configuration["JWTConfiguration:Issuer"],
+                    ValidAudience = configuration["JWTConfiguration:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        System.Text.Encoding.UTF8.GetBytes(configuration["JWTConfiguration:Key"]))
+                };
+            });
 
-            }
-           )
-             .AddJwtBearer(o =>
-               {
-                   o.RequireHttpsMetadata = false; //in production should be true because we want to use https  
-                   o.SaveToken = false;
-                   o.TokenValidationParameters = new TokenValidationParameters
-                   {
-                       ValidateIssuerSigningKey = true,
-                       ValidateIssuer = true,
-                       ValidateAudience = true,
-                       ValidateLifetime = true,
-                       ValidIssuer = configuration["JWTConfiguration:Issuer"],
-                       ValidAudience = configuration["JWTConfiguration:Audience"],
-                       IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration["JWTConfiguration:Key"]))
+            services.AddAuthorization();
 
-
-                   };
-               })
-               ;
-            services.AddScoped<IauthService,AuthService>();
+            services.AddScoped<IauthService, AuthService>();
             services.AddTransient<ItokenHandler, tokenHandler>();
-            
+
             services.AddTransient(
- typeof(IPipelineBehavior<,>),
- typeof(ValidationBehavior<,>));
+                typeof(IPipelineBehavior<,>),
+                typeof(ValidationBehavior<,>));
         }
 
 
