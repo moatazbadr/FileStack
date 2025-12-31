@@ -9,7 +9,7 @@ namespace FileStack.Domain.Entities
         public string LastName { get; set; }
         
 
-        public DateOnly BirthDate { get; set; } = DateOnly.MinValue;
+        public DateTime BirthDate { get; set; } = DateTime.MinValue;
         public string Email { get; set; }
 
         public string PasswordPlain { get; set; } = string.Empty;

@@ -17,4 +17,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<TempUser> TempUsers { get; set; }
     public DbSet<OTPToken> OTPTokens { get; set; }
+    public DbSet<Folder> Folders { get; set; }
+    public DbSet<FileEntity> FileEntities { get; set; } 
 }

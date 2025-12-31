@@ -16,7 +16,11 @@ public class UserProfilePicturePostCommandHandler(IUserProfileService _userProfi
                 throw new Exception("User not found");
        }
        var dbUser = await  _userManager.FindByEmailAsync(user.Email);
-       var uploadResult = await _userProfile.UploadUserPicture(request.ProfilePicture);
+         if (dbUser == null)
+         {
+                 throw new Exception("User not found");
+         }
+        var uploadResult = await _userProfile.UploadUserPicture(request.ProfilePicture);
 
         dbUser.ProfileImageUrl = uploadResult.FileUrl;
         await _userManager.UpdateAsync(dbUser);
