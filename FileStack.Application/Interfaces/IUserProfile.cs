@@ -6,4 +6,5 @@ namespace FileStack.Application.Interfaces;
 public interface IUserProfileService
 {
     Task<UploadResponse> UploadUserPicture(IFormFile ? profilePicture);
+    Task<UploadResponse> DeleteProfilePicture(string ? ImagePath);
 }

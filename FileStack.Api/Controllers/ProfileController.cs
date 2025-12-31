@@ -1,5 +1,6 @@
 ﻿using FileStack.Api.Constants;
 using FileStack.Application.APIResponses;
+using FileStack.Application.User.Command.DeleteProfilePicture;
 using FileStack.Application.User.Command.UserProfilePicturePostCommand;
 using FileStack.Application.User.Queries;
 using MediatR;
@@ -27,8 +28,14 @@ public class ProfileController(IMediator mediator) : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadProfilePicture([FromForm] UserProfilePicturePostCommand command)
     {
-       
         var result = await mediator.Send(command);
+        return Ok(result);
+    }
+    [HttpPost]
+    [Route("Delete-Profile-Picture")]
+    public async Task<IActionResult> DeleteProfilePicture()
+    {
+        var result = await mediator.Send(new DeleteProfilePictureCommand());
         return Ok(result);
     }
 
