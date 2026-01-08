@@ -3,7 +3,7 @@ using FileStack.Application.User;
 
 namespace FileStack.Infrastructure.Repositories;
 
-public class FolderRepository(ApplicationDbContext _context) : IFolderRepository
+public class StorageRepository(ApplicationDbContext _context) : IStorageRepository
 {
     public async Task<UploadResponse> CreateFolderAsync(string UserId ,CreateFolderDto dto)
     {
@@ -32,6 +32,48 @@ public class FolderRepository(ApplicationDbContext _context) : IFolderRepository
                 UploadResponse.Message = "Folder created successfully.";
                 UploadResponse.FileUrl = $"folders/{folder.Id}";
                 return UploadResponse;
+    }
+
+   public async Task<UploadResponse> UploadFileAsync(string userId, UploadFileDto dto)
+    {
+        var folder = await _context.Folders
+       .FirstOrDefaultAsync(f =>
+           f.Id == dto.FolderId &&
+           f.UserId == userId);
+
+        if (folder == null)
+            throw new Exception("Folder not found");
+
+        var userPath = EnsureUserUploadFolder(userId);
+
+        var extension = Path.GetExtension(dto.File.FileName);
+        var storedFileName = $"{Guid.NewGuid()}{extension}";
+        var fullPath = Path.Combine(userPath, storedFileName);
+
+        using (var stream = new FileStream(fullPath, FileMode.Create))
+        {
+            await dto.File.CopyToAsync(stream);
+        }
+        var fileEntity = new FileEntity
+        {
+            OriginalFileName = dto.File.FileName,
+            StoredFileName = storedFileName,
+            FileUrl = $"/uploads/{userId}/{storedFileName}",
+            Size = dto.File.Length,
+            FolderId = folder.Id,
+            UserId = userId,
+        };
+
+        _context.FileEntities.Add(fileEntity);
+        await _context.SaveChangesAsync();
+        return new UploadResponse
+        {
+            Success = true,
+            Message = "File uploaded successfully",
+            FileUrl = fileEntity.FileUrl
+        };
+
+
     }
 
 
