@@ -21,6 +21,7 @@ public static class AddInfrastructureExtenstion
         Services.AddTransient<IMailingService,MailingSerivce>();
 
         Services.AddScoped<IUserProfileService,UserProfileService>();
+        Services.AddScoped<IStorageRepository,StorageRepository>();
 
 
     }

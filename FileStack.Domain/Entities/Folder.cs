@@ -16,8 +16,8 @@ public class Folder
     public Folder? ParentFolder { get; set; }
         
     //subfolders
-    public ICollection<Folder> SubFolders { get; set; } =new List<Folder>();
-    public ICollection<FileEntity> Files { get; set; } = new List<FileEntity>();    
+    public ICollection<Folder> ? SubFolders { get; set; } =new List<Folder>();
+    public ICollection<FileEntity> ? Files { get; set; } = new List<FileEntity>();    
 
 
 

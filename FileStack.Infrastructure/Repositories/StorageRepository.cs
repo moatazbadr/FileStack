@@ -42,7 +42,15 @@ public class StorageRepository(ApplicationDbContext _context) : IStorageReposito
            f.UserId == userId);
 
         if (folder == null)
-            throw new Exception("Folder not found");
+        { 
+            return new UploadResponse
+            {
+                Success = false,
+                Message = "Folder does not exist",
+                FileUrl = string.Empty
+            }; 
+
+        }
 
         var userPath = EnsureUserUploadFolder(userId);
 

@@ -19,7 +19,8 @@ public static class AddApplication
            ;
         services.AddHttpContextAccessor();
         services.AddScoped<IUserContext, UserContext>();
-       
+        
+
     }
 
 }

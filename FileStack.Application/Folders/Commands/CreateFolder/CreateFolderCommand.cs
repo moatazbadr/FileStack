@@ -1,5 +1,10 @@
-﻿namespace FileStack.Application.Folders.Commands.CreateFolder;
+﻿using FileStack.Application.APIResponses;
+using MediatR;
 
-public class CreateFolderCommand
+namespace FileStack.Application.Folders.Commands.CreateFolder;
+
+public class CreateFolderCommand :IRequest<UploadResponse>
 {
+    public string Name { get; set; } = null!;
+    public int? ParentFolderId { get; set; }
 }
