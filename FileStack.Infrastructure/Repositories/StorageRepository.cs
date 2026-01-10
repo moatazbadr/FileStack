@@ -1,10 +1,11 @@
 ﻿
 using AutoMapper;
+using FileStack.Application.Interfaces;
 using FileStack.Application.User;
 
 namespace FileStack.Infrastructure.Repositories;
 
-public class StorageRepository(ApplicationDbContext _context, IMapper _mapper,IUserContext _userContext) : IStorageRepository
+public class StorageRepository<T>(ApplicationDbContext _context, IMapper _mapper,IUserContext _userContext) : IStorageRepository<T> where T : class
 {
     public async Task<UploadResponse> CreateFolderAsync(string UserId ,CreateFolderDto dto)
     {
@@ -35,6 +36,13 @@ public class StorageRepository(ApplicationDbContext _context, IMapper _mapper,IU
                 UploadResponse.Message = "Folder created successfully.";
                 UploadResponse.FileUrl = $"folders/{folder.Id}";
                 return UploadResponse;
+    }
+
+    public Task<T> getByIdAsync(int id)
+    {
+      
+        
+        
     }
 
     public async Task<bool> renameFolder(RenameFolderDto dto)
