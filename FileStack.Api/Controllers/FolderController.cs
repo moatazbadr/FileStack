@@ -1,5 +1,6 @@
 ﻿using FileStack.Api.Constants;
 using FileStack.Application.Folders.Commands.CreateFolder;
+using FileStack.Application.Folders.Commands.RenameFolder;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +26,26 @@ public class FolderController(IMediator mediator) : ControllerBase
         }
         return BadRequest(result);
     }
+    
     //2 . Get Folder by Id
-    //3 . Get All Folders for User
+   
+    
+    
     //4 . Update Folder (naming)
+    [HttpPatch("rename")]
+    [Authorize(Roles=ValidUserRoles.User)]
+    public async Task<IActionResult> RenameFolder([FromBody] RenameFolderCommand command)
+    {
+        var result = await mediator.Send(command);
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+        return BadRequest(result);
+    }
+
+
+    //3 . Get All Folders for User
     //5 . Delete Folder
     //6 . Move Folder to another Folder
     //7 . Get Subfolders of a Folder

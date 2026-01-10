@@ -1,11 +1,34 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using FileStack.Application.APIResponses;
+using FileStack.Application.DTOS;
+using FileStack.Application.Interfaces;
+using MediatR;
 
 namespace FileStack.Application.Folders.Commands.RenameFolder;
 
-public class RenameFolderCommandHandler : IRequestHandler<RenameFolderCommand, bool>
+public class RenameFolderCommandHandler(IStorageRepository storage,IMapper _mapper) : IRequestHandler<RenameFolderCommand, UploadResponse>
 {
-    public Task<bool> Handle(RenameFolderCommand request, CancellationToken cancellationToken)
+
+
+    async Task<UploadResponse> IRequestHandler<RenameFolderCommand, UploadResponse>.Handle(RenameFolderCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var dto = _mapper.Map<RenameFolderDto>(request);
+        var result =  await storage.renameFolder(dto);
+        if (!result)
+        {
+            return new UploadResponse
+            {
+                Success = false,
+                Message = "Folder not found or could not be renamed.",
+                FileUrl = string.Empty
+            };
+        }
+        return new UploadResponse
+        {
+            Success = true,
+            Message = "Folder renamed successfully.",
+            FileUrl = $"folders/{request.FolderId}"
+        };
+
     }
 }

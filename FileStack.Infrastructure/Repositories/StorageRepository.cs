@@ -4,7 +4,7 @@ using FileStack.Application.User;
 
 namespace FileStack.Infrastructure.Repositories;
 
-public class StorageRepository(ApplicationDbContext _context, IMapper _mapper) : IStorageRepository
+public class StorageRepository(ApplicationDbContext _context, IMapper _mapper,IUserContext _userContext) : IStorageRepository
 {
     public async Task<UploadResponse> CreateFolderAsync(string UserId ,CreateFolderDto dto)
     {
@@ -37,9 +37,21 @@ public class StorageRepository(ApplicationDbContext _context, IMapper _mapper) :
                 return UploadResponse;
     }
 
-    public Task<bool> renameFolder(RenameFolderDto dto)
+    public async Task<bool> renameFolder(RenameFolderDto dto)
     {
-        throw new NotImplementedException();
+        var user = _userContext.GetCurrentUser();
+        
+        var folder =  await _context.Folders.FirstOrDefaultAsync(f => f.Id == dto.FolderId && f.UserId == user.UserId);
+
+        if (folder == null)
+        {
+            return false;
+        }   
+        folder.Name = dto.NewName;
+        _context.Folders.Update(folder);
+        await _context.SaveChangesAsync();
+        return true;
+
     }
 
     public async Task<UploadResponse> UploadFileAsync(string userId, UploadFileDto dto)
