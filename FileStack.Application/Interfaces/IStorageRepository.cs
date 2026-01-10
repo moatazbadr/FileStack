@@ -7,6 +7,7 @@ public interface IStorageRepository
 {
     Task<UploadResponse> CreateFolderAsync(string UserId, CreateFolderDto createFolder);
     Task<UploadResponse> UploadFileAsync(string UserId, UploadFileDto uploadFile);
+    Task<bool> renameFolder(RenameFolderDto dto);
 
 
 }

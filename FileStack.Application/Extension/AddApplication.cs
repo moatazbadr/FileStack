@@ -1,8 +1,10 @@
-﻿using FileStack.Application.Interfaces;
+﻿using FileStack.Application.AutoMapper;
+using FileStack.Application.Interfaces;
 using FileStack.Application.User;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace FileStack.Application.Extension;
 
@@ -19,6 +21,9 @@ public static class AddApplication
            ;
         services.AddHttpContextAccessor();
         services.AddScoped<IUserContext, UserContext>();
+        services.AddAutoMapper(conf => { 
+        conf.AddProfile<MappingProfiles>();
+        });
         
 
     }

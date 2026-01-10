@@ -1,9 +1,10 @@
 ﻿
+using AutoMapper;
 using FileStack.Application.User;
 
 namespace FileStack.Infrastructure.Repositories;
 
-public class StorageRepository(ApplicationDbContext _context) : IStorageRepository
+public class StorageRepository(ApplicationDbContext _context, IMapper _mapper) : IStorageRepository
 {
     public async Task<UploadResponse> CreateFolderAsync(string UserId ,CreateFolderDto dto)
     {
@@ -20,12 +21,14 @@ public class StorageRepository(ApplicationDbContext _context) : IStorageReposito
             }
             
         }
-                var folder = new Folder
+                var folder = new Folder()
                 {
                     Name = dto.Name,
                     ParentFolderId = dto.ParentFolderId,
-                    UserId = UserId
+                    UserId = UserId,
+                    CreatedAt = DateTime.UtcNow
                 };
+
                 _context.Folders.Add(folder);
                 await _context.SaveChangesAsync();
                 UploadResponse.Success = true;
@@ -34,7 +37,12 @@ public class StorageRepository(ApplicationDbContext _context) : IStorageReposito
                 return UploadResponse;
     }
 
-   public async Task<UploadResponse> UploadFileAsync(string userId, UploadFileDto dto)
+    public Task<bool> renameFolder(RenameFolderDto dto)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<UploadResponse> UploadFileAsync(string userId, UploadFileDto dto)
     {
         var folder = await _context.Folders
        .FirstOrDefaultAsync(f =>
