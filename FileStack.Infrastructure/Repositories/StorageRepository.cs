@@ -39,14 +39,23 @@ public class StorageRepository(ApplicationDbContext _context, IMapper _mapper,IU
     }
 
    
-    public async Task< IEnumerable < FolderToRturnDto>> getByNameAsync(string userId, string name)
+    public async Task< IEnumerable <FolderToRturnDto>> getByNameAsync(int? parentFolderId, string userId, string name)
     {
-        var folder = await _context.Folders.AsNoTracking()
-            .Where(f => f.UserId == userId && f.Name.Contains(name.ToLower()) && !f.ParentFolderId.HasValue)
-            .ToListAsync();
-            
-        return _mapper.Map<IEnumerable<FolderToRturnDto>>(folder);
+        if (!parentFolderId.HasValue)
+        {
+            var folders = await _context.Folders.AsNoTracking()
+                .Where(f => f.UserId == userId && f.Name.Contains(name.ToLower()) && !f.ParentFolderId.HasValue)
+                .ToListAsync();
+            return _mapper.Map<IEnumerable<FolderToRturnDto>>(folders);
+        }
 
+        var foldersWithInAParentFolder = await _context.Folders.AsNoTracking()
+                        .Where(f =>
+                            f.UserId == userId &&
+                            f.ParentFolderId == parentFolderId &&
+                            (string.IsNullOrEmpty(name) || f.Name.Contains(name))).ToListAsync();
+        return _mapper.Map<IEnumerable<FolderToRturnDto>>(foldersWithInAParentFolder);
+        
     }
 
     public async Task<bool> renameFolder(RenameFolderDto dto)

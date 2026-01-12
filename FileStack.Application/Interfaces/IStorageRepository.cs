@@ -8,6 +8,6 @@ public interface IStorageRepository
     Task<UploadResponse> CreateFolderAsync(string UserId, CreateFolderDto createFolder);
     Task<UploadResponse> UploadFileAsync(string UserId, UploadFileDto uploadFile);
     Task<bool> renameFolder(RenameFolderDto dto);
-    Task< IEnumerable< FolderToRturnDto>> getByNameAsync(string userId,string name);
+    Task< IEnumerable< FolderToRturnDto>> getByNameAsync(int ? parentFolderId,string userId,string name);
 
 }

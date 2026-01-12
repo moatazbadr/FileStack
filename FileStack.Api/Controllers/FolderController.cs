@@ -44,21 +44,12 @@ public class FolderController(IMediator mediator) : ControllerBase
         }
         return BadRequest(result);
     }
-    [HttpGet("folder/{name}")]
-    [Authorize(Roles=ValidUserRoles.User)]
-    public async Task<IActionResult> GetFolderByName(string name)
+    [HttpGet("folders")]
+    [Authorize(Roles = ValidUserRoles.User)]
+    public async Task<IActionResult> GetFolderByName([FromQuery] GetFolderQuery query)
     {
-        var GetFolderQuery = new GetFolderQuery
-        {
-            FolderName = name
-        };
-        var result = await mediator.Send(GetFolderQuery);
-        if (result.Count() != 0)
-        {
-            return Ok(result);
-        }
-        return NotFound("Folders not found.");
-
+        var result = await mediator.Send(query);
+        return result.Any() ? Ok(result) : NotFound("Folders not found.");
     }
 
     //3 . Get All Folders for User

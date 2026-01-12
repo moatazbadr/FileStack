@@ -6,4 +6,5 @@ namespace FileStack.Application.Folders.Queries;
 public class GetFolderQuery : IRequest< IEnumerable< FolderToRturnDto>>
 {
     public string FolderName { get; set; }
+    public int ? parentFolderId { get; set; }
 }

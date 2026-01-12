@@ -14,7 +14,7 @@ public class GetFolderQueryHandler(IStorageRepository repository, IUserContext _
         {
             return Enumerable.Empty<FolderToRturnDto>();
         }
-        var folders = await repository.getByNameAsync( user.UserId, request.FolderName);
+        var folders = await repository.getByNameAsync(request.parentFolderId ,user.UserId, request.FolderName);
         return folders;
 
 
