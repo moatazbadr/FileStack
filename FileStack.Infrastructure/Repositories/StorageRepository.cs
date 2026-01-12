@@ -5,7 +5,7 @@ using FileStack.Application.User;
 
 namespace FileStack.Infrastructure.Repositories;
 
-public class StorageRepository<T>(ApplicationDbContext _context, IMapper _mapper,IUserContext _userContext) : IStorageRepository<T> where T : class
+public class StorageRepository(ApplicationDbContext _context, IMapper _mapper,IUserContext _userContext) : IStorageRepository
 {
     public async Task<UploadResponse> CreateFolderAsync(string UserId ,CreateFolderDto dto)
     {
@@ -38,11 +38,15 @@ public class StorageRepository<T>(ApplicationDbContext _context, IMapper _mapper
                 return UploadResponse;
     }
 
-    public Task<T> getByIdAsync(int id)
+   
+    public async Task< IEnumerable < FolderToRturnDto>> getByNameAsync(string userId, string name)
     {
-      
-        
-        
+        var folder = await _context.Folders.AsNoTracking()
+            .Where(f => f.UserId == userId && f.Name.Contains(name.ToLower()) && !f.ParentFolderId.HasValue)
+            .ToListAsync();
+            
+        return _mapper.Map<IEnumerable<FolderToRturnDto>>(folder);
+
     }
 
     public async Task<bool> renameFolder(RenameFolderDto dto)

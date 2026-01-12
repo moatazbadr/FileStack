@@ -1,6 +1,7 @@
 ﻿using FileStack.Api.Constants;
 using FileStack.Application.Folders.Commands.CreateFolder;
 using FileStack.Application.Folders.Commands.RenameFolder;
+using FileStack.Application.Folders.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +44,22 @@ public class FolderController(IMediator mediator) : ControllerBase
         }
         return BadRequest(result);
     }
+    [HttpGet("folder/{name}")]
+    [Authorize(Roles=ValidUserRoles.User)]
+    public async Task<IActionResult> GetFolderByName(string name)
+    {
+        var GetFolderQuery = new GetFolderQuery
+        {
+            FolderName = name
+        };
+        var result = await mediator.Send(GetFolderQuery);
+        if (result.Count() != 0)
+        {
+            return Ok(result);
+        }
+        return NotFound("Folders not found.");
 
+    }
 
     //3 . Get All Folders for User
     //5 . Delete Folder

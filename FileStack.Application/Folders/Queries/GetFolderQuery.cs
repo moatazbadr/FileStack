@@ -3,7 +3,7 @@ using MediatR;
 
 namespace FileStack.Application.Folders.Queries;
 
-public class GetFolderQuery : IRequest<FolderToRturnDto>
+public class GetFolderQuery : IRequest< IEnumerable< FolderToRturnDto>>
 {
-    public int FolderId { get; set; }
+    public string FolderName { get; set; }
 }

@@ -16,5 +16,7 @@ public class MappingProfiles : Profile
 
         CreateMap<CreateFolderDto, CreateFolderCommand>().ReverseMap();
         CreateMap<RenameFolderDto, RenameFolderCommand>().ReverseMap();
+        CreateMap<Folder, FolderToRturnDto>()
+            .ReverseMap();
     }
 }
